@@ -1,5 +1,6 @@
 import pygame as pg
 from random import randint
+from spryte import*
 
 
 pg.init()
@@ -13,7 +14,7 @@ clock = pg.time.Clock()
 x = 30
 y = 30
 speed = 5
-
+life = 100
 x2 = 670
 
 y2 = 670
@@ -29,6 +30,24 @@ screen = pg.display.set_mode((800,600))
 samurai_img = pg.image.load("samurai.png")
 samurai_img = pg.transform.scale(samurai_img, (100,130)) # endre størelse på karakter
 
+all_spryte = pg.sprite.Group()
+enemy_group = pg.sprite.Group()
+Enemyattack_group = pg.sprite.Group()
+
+enemy = Enemy()
+samurai = player()
+
+
+all_spryte.add(samurai)
+all_spryte.add(enemy)
+
+
+enemy_attack = EnemyAttack()
+all_spryte.add(enemy_attack)
+enemy_attack2 = EnemyAttack()
+all_spryte.add(enemy_attack2)
+Enemyattack_group.add(enemy_attack, enemy_attack2)
+
 playing = True
 while playing: # game loop
     clock.tick(FPS)
@@ -38,38 +57,30 @@ while playing: # game loop
     
 
     screen.fill(GREY)
+    all_spryte.update()
+
+
+    hits = pg.sprite.spritecollide(samurai, Enemyattack_group,True)
+    if hits:
+        life -= 10
+    if life < 1:
+        playing = False
+        
+    all_spryte.draw(screen)
+    
+    
+
+
+    #lage ny fiender 
+    if len(Enemyattack_group) < 4:
+        enemy_attack = EnemyAttack()
+        all_spryte.add(enemy_attack)
+        Enemyattack_group.add(enemy_attack)
 
     
 #move box
 
-    keys = pg.key.get_pressed()
-    if keys[pg.K_w]:
-        y -= speed
-        
-    if keys[pg.K_s]:
-        y += speed
-    if keys[pg.K_d]:
-        x += speed
-    if keys[pg.K_a]:
-        x -= speed
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+   
 
     x2 += direction_x2
 
@@ -104,10 +115,7 @@ while playing: # game loop
     
 
 
-
-
-
-
+  # SECOND BOX/ENEMY¨
     if x2 > 700:
         rand12 = randint(1,5)
         box_color = (randint(0,255),randint(0,255),randint(0,255))
@@ -118,7 +126,7 @@ while playing: # game loop
 
     if x2 < 0:
         rand22 = randint(1,5)
-        box_color = (randint(0,255),randint(0,255),randint(0,255))
+        box_color = (randint(4,255),randint(116,255),randint(24,255))
         
         direction_x2 = rand22
     
@@ -139,24 +147,16 @@ while playing: # game loop
 
 
 
+ 
 
-
-
-
-
-    
-    
-       
-
-
-    box = pg.Rect(x,y ,100,100)
-    pg.draw.rect(screen, box_color, box )
-
-    box2 = pg.Rect(x2,y2 ,100,100)
-    pg.draw.rect(screen, box_color, box2)
-
-    screen.blit(samurai_img, (x,y))
+   
 
     pg.display.update()
            
+
+
+
+
+
+
 
