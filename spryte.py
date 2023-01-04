@@ -12,7 +12,11 @@ player_img2 = pg.transform.scale(player_img2, (100,130))
 attack_img = pg.transform.scale(attack_img, (100,130))
 small_bullet_img = pg.image.load("bullet.png")
 big_bullet_img = pg.image.load("bigbullet.png")
-laser_beam_img = pg.image.load("langbeam.png")
+laser_beam_img = pg.image.load("langbeam2.png")
+shuriken_img = pg.image.load("shuriken.png")
+shuriken_img = pg.transform.scale(shuriken_img, (30,30))
+laser_beam_img = pg.transform.scale(laser_beam_img,(300,30))
+
 
 
 
@@ -27,8 +31,10 @@ class player(pg.sprite.Sprite):
         self.rect.center = self.pos
         self.speed = 5
         self.projectile_speed = 5
-        self.attack_direction_x, self.attack_direction_y = 0, 0
+        self.attack_direction_x, self.attack_direction_y = 1, 0
+        self.last_attack = 0
 
+        self.attack_interval = 500
         self.life = 3
 
     def update(self):
@@ -48,9 +54,16 @@ class player(pg.sprite.Sprite):
             self.pos.x -= self.speed
             self.image = herorunleft_img
 
-    def attack(self):
-        Ranged_attack(self.game, self.pos.x, self.pos.y, self.attack_direction_x, self.attack_direction_y)
+        if keys [pg.K_SPACE]:
+            self.attack()
 
+    def attack(self):
+        now = pg.time.get_ticks()
+        if now - self.last_attack > self.attack_interval:
+            print("attacked")
+            self.last_attack = pg.time.get_ticks()
+            Ranged_attack(self.game, self.pos.x, self.pos.y, self.attack_direction_x, self.attack_direction_y )
+            
 
 
 class Enemy(pg.sprite.Sprite):
@@ -62,6 +75,7 @@ class Enemy(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = self.pos
         self.speed = 5
+        self.life = 1000
 
 
     def update(self):
@@ -95,6 +109,7 @@ class laserbeam(pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self)
 
         self.image = laser_beam_img
+        self.image.set_colorkey((255,255,255))
         self.pos = vec (900,300)
         self.rect = self.image.get_rect()
         self.rect.center = self.pos
@@ -110,7 +125,7 @@ class laserbeam(pg.sprite.Sprite):
 
 class Ranged_attack(pg.sprite.Sprite):
     def __init__(self, game, x ,y, direction_x, direction_y):
-        self.groups = game.all_sprites, game.projectiles_grp # legger til i sprite gruppe
+        self.groups = game.all_spryte, game.projectiles_grp # legger til i sprite gruppe
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
         self.image = pg.Surface([50,50])
@@ -118,13 +133,17 @@ class Ranged_attack(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.pos = vec(x, y) # start posisjon
         self.direction_x = direction_x
+        self.image = shuriken_img
         self.direction_y = direction_y
         self.rect.center = self.pos
+        self.speed = 5
+        
  
     def update(self):
         self.rect.center = self.pos
-        self.pos.x += self.direction_x
+        self.pos.x += self.direction_x * self.speed
         self.pos.y += self.direction_y
+        
 
 
         

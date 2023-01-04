@@ -24,9 +24,10 @@ class Game():
         self.Wizzard = pg.transform.scale(self.Wizzard, (100,130))
         mixer.music.load("Doom - Main Theme.mp3")
         mixer.music.play(-1)
+        self.sound = pg.mixer.Sound("oof.mp3.mp3")
+        pg.display.set_caption('ok')
+       
         self.new()
-        self.hit_sound = mixer.Sound("oof.mp3.mp3")
-    
 
     def game_over_loop(self):
         mixer.music.stop()
@@ -58,12 +59,45 @@ class Game():
 
         self.new()
 
+    def game_win_loop(self):
+
+        mixer.music.stop()
+        mixer.music.load("end music.mp3")
+        mixer.music.play(-1)
+        self.game_over = True
+        while self.game_over:
+            self.clock.tick(self.FPS)
+            self.game_over_text = self.comic_sans30.render("gratulerer du vant trykk r for å spille igjen ", False, (0,150,0))
+
+
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    self.game_over = False
+                    pg.quit()
+ 
+                if event.type == pg.KEYDOWN:
+                    if event.key == pg.K_r:  # om vi clicker på R, avslutter vi game over loop, og går derett til self.new() som ligger etter game_over loop
+                        self.game_over = False  
+ 
+            self.screen.fill(self.BLACK)
+            self.screen.blit(self.game_over_text,(30,30))  # tegner tekst på skjerm. 
+            self.text_hp = self.comic_sans30.render("SCORE: " + str(self.score), True, self.WHITE)
+            self.screen.blit(self.text_hp,(30,60))
+
+
+            pg.display.update()
+
+        self.new()
+            
+
+
     def new(self): # all kode som trengs for å starte en runde
         self.score = 0
         self.next_level_counter = 1000
         self.speed = 5
         self.life = 3
         self.level = 1
+        self.boss_life = 1000
         mixer.music.stop
         mixer.music.load("Doom - Main Theme.mp3")
         mixer.music.play(-1)
@@ -72,8 +106,9 @@ class Game():
         self.enemy_group = pg.sprite.Group()
         self.Enemyattack_group = pg.sprite.Group()
         self.Laserbeam_group = pg.sprite.Group()
+        self.projectiles_grp = pg.sprite.Group()
 
-        self.enemy = Enemy()
+        self.enemy = Enemy() 
         self.samurai = player(self)
         self.all_spryte.add(self.samurai)
         self.all_spryte.add(self.enemy)
@@ -91,9 +126,10 @@ class Game():
       
 
         elif self.level == 2:
-            if len(self.Laserbeam_group) < 1:
+            if len(self.Laserbeam_group) < 2:
                 laser_beam = laserbeam()
                 self.all_spryte.add(laser_beam)
+                self.Laserbeam_group.add(laser_beam)
                 self.Enemyattack_group.add(laser_beam)
 
 
@@ -107,7 +143,7 @@ class Game():
                     playing= False 
             
             self.screen.blit(self.bg_img,(0,0))
-            mixer.music.load("oof.mp3.mp3")
+            
             
             self.score += 1
             text_hp = self.comic_sans30.render("SCORE: " + str(self.score), True, self.WHITE)
@@ -117,10 +153,21 @@ class Game():
             hits = pg.sprite.spritecollide(self.samurai, self.Enemyattack_group,True)
             if hits:
                 self.life -= 1
-                mixer.music.play(self.hit_sound)
+                pg.mixer.Sound.play(self.sound)
             
             if self.life < 1:
                 playing = False
+
+            hits2 = pg.sprite.groupcollide(self.projectiles_grp, self.Enemyattack_group, True, True)
+
+
+            hits3 = pg.sprite.spritecollide(self.enemy, self.projectiles_grp,True)
+            if hits3:
+                self.boss_life -= 50
+                
+            
+            if self.boss_life < 1:
+             self.game_win_loop()
                 
             self.all_spryte.draw(self.screen)
 
@@ -136,6 +183,7 @@ class Game():
                     enemy.kill()
                 self.Enemyattack_group = pg.sprite.Group()
 
+            print(self.level)
 
             pg.display.update()
             
@@ -144,4 +192,4 @@ class Game():
 g = Game()
 
 
- 
+   
