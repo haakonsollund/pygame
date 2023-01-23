@@ -25,7 +25,7 @@ class Game():
         mixer.music.load("Doom - Main Theme.mp3")
         mixer.music.play(-1)
         self.sound = pg.mixer.Sound("oof.mp3.mp3")
-        pg.display.set_caption('ok')
+        pg.display.set_caption('ok        ')
        
         self.new()
 
